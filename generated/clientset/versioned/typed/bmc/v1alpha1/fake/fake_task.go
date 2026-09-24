@@ -6,20 +6,21 @@
 package fake
 
 import (
-	bmcv1alpha1 "github.com/s-urbaniak/tinkerbell-client-go/generated/clientset/versioned/typed/bmc/v1alpha1"
+	bmcv1alpha1 "github.com/s-urbaniak/tinkerbell-client-go/generated/applyconfiguration/bmc/v1alpha1"
+	typedbmcv1alpha1 "github.com/s-urbaniak/tinkerbell-client-go/generated/clientset/versioned/typed/bmc/v1alpha1"
 	v1alpha1 "github.com/tinkerbell/tinkerbell/api/v1alpha1/bmc"
 	gentype "k8s.io/client-go/gentype"
 )
 
 // fakeTasks implements TaskInterface
 type fakeTasks struct {
-	*gentype.FakeClientWithList[*v1alpha1.Task, *v1alpha1.TaskList]
+	*gentype.FakeClientWithListAndApply[*v1alpha1.Task, *v1alpha1.TaskList, *bmcv1alpha1.TaskApplyConfiguration]
 	Fake *FakeBmcV1alpha1
 }
 
-func newFakeTasks(fake *FakeBmcV1alpha1, namespace string) bmcv1alpha1.TaskInterface {
+func newFakeTasks(fake *FakeBmcV1alpha1, namespace string) typedbmcv1alpha1.TaskInterface {
 	return &fakeTasks{
-		gentype.NewFakeClientWithList[*v1alpha1.Task, *v1alpha1.TaskList](
+		gentype.NewFakeClientWithListAndApply[*v1alpha1.Task, *v1alpha1.TaskList, *bmcv1alpha1.TaskApplyConfiguration](
 			fake.Fake,
 			namespace,
 			v1alpha1.GroupVersion.WithResource("tasks"),

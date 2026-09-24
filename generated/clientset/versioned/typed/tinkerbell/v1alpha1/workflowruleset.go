@@ -8,6 +8,7 @@ package v1alpha1
 import (
 	context "context"
 
+	applyconfigurationtinkerbellv1alpha1 "github.com/s-urbaniak/tinkerbell-client-go/generated/applyconfiguration/tinkerbell/v1alpha1"
 	scheme "github.com/s-urbaniak/tinkerbell-client-go/generated/clientset/versioned/scheme"
 	tinkerbellv1alpha1 "github.com/tinkerbell/tinkerbell/api/v1alpha1/tinkerbell"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -34,18 +35,21 @@ type WorkflowRuleSetInterface interface {
 	List(ctx context.Context, opts v1.ListOptions) (*tinkerbellv1alpha1.WorkflowRuleSetList, error)
 	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
 	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *tinkerbellv1alpha1.WorkflowRuleSet, err error)
+	Apply(ctx context.Context, workflowRuleSet *applyconfigurationtinkerbellv1alpha1.WorkflowRuleSetApplyConfiguration, opts v1.ApplyOptions) (result *tinkerbellv1alpha1.WorkflowRuleSet, err error)
+	// Add a +genclient:noStatus comment above the type to avoid generating ApplyStatus().
+	ApplyStatus(ctx context.Context, workflowRuleSet *applyconfigurationtinkerbellv1alpha1.WorkflowRuleSetApplyConfiguration, opts v1.ApplyOptions) (result *tinkerbellv1alpha1.WorkflowRuleSet, err error)
 	WorkflowRuleSetExpansion
 }
 
 // workflowRuleSets implements WorkflowRuleSetInterface
 type workflowRuleSets struct {
-	*gentype.ClientWithList[*tinkerbellv1alpha1.WorkflowRuleSet, *tinkerbellv1alpha1.WorkflowRuleSetList]
+	*gentype.ClientWithListAndApply[*tinkerbellv1alpha1.WorkflowRuleSet, *tinkerbellv1alpha1.WorkflowRuleSetList, *applyconfigurationtinkerbellv1alpha1.WorkflowRuleSetApplyConfiguration]
 }
 
 // newWorkflowRuleSets returns a WorkflowRuleSets
 func newWorkflowRuleSets(c *TinkerbellV1alpha1Client, namespace string) *workflowRuleSets {
 	return &workflowRuleSets{
-		gentype.NewClientWithList[*tinkerbellv1alpha1.WorkflowRuleSet, *tinkerbellv1alpha1.WorkflowRuleSetList](
+		gentype.NewClientWithListAndApply[*tinkerbellv1alpha1.WorkflowRuleSet, *tinkerbellv1alpha1.WorkflowRuleSetList, *applyconfigurationtinkerbellv1alpha1.WorkflowRuleSetApplyConfiguration](
 			"workflowrulesets",
 			c.RESTClient(),
 			scheme.ParameterCodec,

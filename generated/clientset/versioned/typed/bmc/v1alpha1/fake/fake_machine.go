@@ -6,20 +6,21 @@
 package fake
 
 import (
-	bmcv1alpha1 "github.com/s-urbaniak/tinkerbell-client-go/generated/clientset/versioned/typed/bmc/v1alpha1"
+	bmcv1alpha1 "github.com/s-urbaniak/tinkerbell-client-go/generated/applyconfiguration/bmc/v1alpha1"
+	typedbmcv1alpha1 "github.com/s-urbaniak/tinkerbell-client-go/generated/clientset/versioned/typed/bmc/v1alpha1"
 	v1alpha1 "github.com/tinkerbell/tinkerbell/api/v1alpha1/bmc"
 	gentype "k8s.io/client-go/gentype"
 )
 
 // fakeMachines implements MachineInterface
 type fakeMachines struct {
-	*gentype.FakeClientWithList[*v1alpha1.Machine, *v1alpha1.MachineList]
+	*gentype.FakeClientWithListAndApply[*v1alpha1.Machine, *v1alpha1.MachineList, *bmcv1alpha1.MachineApplyConfiguration]
 	Fake *FakeBmcV1alpha1
 }
 
-func newFakeMachines(fake *FakeBmcV1alpha1, namespace string) bmcv1alpha1.MachineInterface {
+func newFakeMachines(fake *FakeBmcV1alpha1, namespace string) typedbmcv1alpha1.MachineInterface {
 	return &fakeMachines{
-		gentype.NewFakeClientWithList[*v1alpha1.Machine, *v1alpha1.MachineList](
+		gentype.NewFakeClientWithListAndApply[*v1alpha1.Machine, *v1alpha1.MachineList, *bmcv1alpha1.MachineApplyConfiguration](
 			fake.Fake,
 			namespace,
 			v1alpha1.GroupVersion.WithResource("machines"),

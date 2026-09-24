@@ -8,6 +8,7 @@ package v1alpha1
 import (
 	context "context"
 
+	applyconfigurationbmcv1alpha1 "github.com/s-urbaniak/tinkerbell-client-go/generated/applyconfiguration/bmc/v1alpha1"
 	scheme "github.com/s-urbaniak/tinkerbell-client-go/generated/clientset/versioned/scheme"
 	bmcv1alpha1 "github.com/tinkerbell/tinkerbell/api/v1alpha1/bmc"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -34,18 +35,21 @@ type TaskInterface interface {
 	List(ctx context.Context, opts v1.ListOptions) (*bmcv1alpha1.TaskList, error)
 	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
 	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *bmcv1alpha1.Task, err error)
+	Apply(ctx context.Context, task *applyconfigurationbmcv1alpha1.TaskApplyConfiguration, opts v1.ApplyOptions) (result *bmcv1alpha1.Task, err error)
+	// Add a +genclient:noStatus comment above the type to avoid generating ApplyStatus().
+	ApplyStatus(ctx context.Context, task *applyconfigurationbmcv1alpha1.TaskApplyConfiguration, opts v1.ApplyOptions) (result *bmcv1alpha1.Task, err error)
 	TaskExpansion
 }
 
 // tasks implements TaskInterface
 type tasks struct {
-	*gentype.ClientWithList[*bmcv1alpha1.Task, *bmcv1alpha1.TaskList]
+	*gentype.ClientWithListAndApply[*bmcv1alpha1.Task, *bmcv1alpha1.TaskList, *applyconfigurationbmcv1alpha1.TaskApplyConfiguration]
 }
 
 // newTasks returns a Tasks
 func newTasks(c *BmcV1alpha1Client, namespace string) *tasks {
 	return &tasks{
-		gentype.NewClientWithList[*bmcv1alpha1.Task, *bmcv1alpha1.TaskList](
+		gentype.NewClientWithListAndApply[*bmcv1alpha1.Task, *bmcv1alpha1.TaskList, *applyconfigurationbmcv1alpha1.TaskApplyConfiguration](
 			"tasks",
 			c.RESTClient(),
 			scheme.ParameterCodec,

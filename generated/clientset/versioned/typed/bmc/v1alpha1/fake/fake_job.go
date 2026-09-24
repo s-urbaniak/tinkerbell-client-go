@@ -6,20 +6,21 @@
 package fake
 
 import (
-	bmcv1alpha1 "github.com/s-urbaniak/tinkerbell-client-go/generated/clientset/versioned/typed/bmc/v1alpha1"
+	bmcv1alpha1 "github.com/s-urbaniak/tinkerbell-client-go/generated/applyconfiguration/bmc/v1alpha1"
+	typedbmcv1alpha1 "github.com/s-urbaniak/tinkerbell-client-go/generated/clientset/versioned/typed/bmc/v1alpha1"
 	v1alpha1 "github.com/tinkerbell/tinkerbell/api/v1alpha1/bmc"
 	gentype "k8s.io/client-go/gentype"
 )
 
 // fakeJobs implements JobInterface
 type fakeJobs struct {
-	*gentype.FakeClientWithList[*v1alpha1.Job, *v1alpha1.JobList]
+	*gentype.FakeClientWithListAndApply[*v1alpha1.Job, *v1alpha1.JobList, *bmcv1alpha1.JobApplyConfiguration]
 	Fake *FakeBmcV1alpha1
 }
 
-func newFakeJobs(fake *FakeBmcV1alpha1, namespace string) bmcv1alpha1.JobInterface {
+func newFakeJobs(fake *FakeBmcV1alpha1, namespace string) typedbmcv1alpha1.JobInterface {
 	return &fakeJobs{
-		gentype.NewFakeClientWithList[*v1alpha1.Job, *v1alpha1.JobList](
+		gentype.NewFakeClientWithListAndApply[*v1alpha1.Job, *v1alpha1.JobList, *bmcv1alpha1.JobApplyConfiguration](
 			fake.Fake,
 			namespace,
 			v1alpha1.GroupVersion.WithResource("jobs"),

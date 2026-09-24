@@ -13,9 +13,11 @@ The initial surface covers every `v1alpha1` root resource in the published
 | `bmc.tinkerbell.org` | Job, Machine, Task |
 
 The generated packages under `generated/` provide an aggregate clientset,
-versioned typed clients, a fake clientset, listers, and a shared informer
-factory. Clients use the published API objects directly. No generated client
-code is placed in `tinkerbell/tinkerbell`.
+versioned typed clients, a fake clientset, listers, a shared informer factory,
+and apply-configuration builders for server-side apply. Typed and fake clients
+expose `Apply` and `ApplyStatus` for these resources. Clients use the published
+API objects directly. No generated client code is placed in
+`tinkerbell/tinkerbell`.
 
 ## Use
 
@@ -36,6 +38,21 @@ _ = factory.Tinkerbell().V1alpha1().Hardware()
 The `restConfig` value is a normal `*rest.Config`. This module is a proof of
 concept; depend on a commit until it has a release tag.
 
+For server-side apply, build a configuration and set a field manager:
+
+```go
+import (
+    applytink "github.com/s-urbaniak/tinkerbell-client-go/generated/applyconfiguration/tinkerbell/v1alpha1"
+    metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
+
+hardware := applytink.Hardware("node-1", "default").
+    WithSpec(applytink.HardwareSpec().WithAgentID("aa:bb:cc:dd:ee:ff"))
+_, err = clients.TinkerbellV1alpha1().Hardware("default").Apply(
+    ctx, hardware, metav1.ApplyOptions{FieldManager: "my-controller"},
+)
+```
+
 ## Regenerate
 
 Requirements: Go 1.26 and Python 3. Run:
@@ -45,14 +62,22 @@ Requirements: Go 1.26 and Python 3. Run:
 go test ./...
 ```
 
-`hack/generate.sh` installs Kubernetes `client-gen`, `lister-gen`, and
-`informer-gen` v0.36.3 into `.bin/`, then runs them entirely in this repository.
-The generator input is under `internal/codegen/apis`. Those minimal concrete
-stubs exist because Kubernetes' generators expect `group/version` packages and
-do not discover aliases to Tinkerbell's public `version/group` API types. The
-post-generation step binds all output to the published API module, changes the
-scheme symbol to Tinkerbell's `GroupVersion`, and uses the CRD's singular
-`hardware` resource path. The stubs are never imported by generated clients.
+`hack/generate.sh` installs Kubernetes `applyconfiguration-gen`, `client-gen`,
+`lister-gen`, and `informer-gen` v0.36.3 into `.bin/`, then runs them entirely in
+this repository. For apply builders, it temporarily copies the full API source
+from the pinned published module into a `group/version` layout, generates the
+builders, and removes that temporary input. Client generation uses the minimal
+concrete stubs under `internal/codegen/apis`. Those stubs exist because the
+Kubernetes generators do not discover aliases to Tinkerbell's public
+`version/group` API types. The post-generation step binds all output to the
+published API module, changes the scheme symbol to Tinkerbell's `GroupVersion`,
+and uses the CRD's singular `hardware` resource path. No generated package
+imports the temporary copy or the stubs.
+
+This proof of concept does not supply an OpenAPI v2 schema to the apply
+generator, so it does not emit `Extract*` helpers for reconstructing
+field ownership from live objects. `Apply` and `ApplyStatus` use Kubernetes'
+server-side apply patch protocol.
 
 To check reproducibility, run generation and confirm `git diff --exit-code --
 generated` succeeds.

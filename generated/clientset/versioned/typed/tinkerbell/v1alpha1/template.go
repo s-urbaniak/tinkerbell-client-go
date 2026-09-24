@@ -8,6 +8,7 @@ package v1alpha1
 import (
 	context "context"
 
+	applyconfigurationtinkerbellv1alpha1 "github.com/s-urbaniak/tinkerbell-client-go/generated/applyconfiguration/tinkerbell/v1alpha1"
 	scheme "github.com/s-urbaniak/tinkerbell-client-go/generated/clientset/versioned/scheme"
 	tinkerbellv1alpha1 "github.com/tinkerbell/tinkerbell/api/v1alpha1/tinkerbell"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -34,18 +35,21 @@ type TemplateInterface interface {
 	List(ctx context.Context, opts v1.ListOptions) (*tinkerbellv1alpha1.TemplateList, error)
 	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
 	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *tinkerbellv1alpha1.Template, err error)
+	Apply(ctx context.Context, template *applyconfigurationtinkerbellv1alpha1.TemplateApplyConfiguration, opts v1.ApplyOptions) (result *tinkerbellv1alpha1.Template, err error)
+	// Add a +genclient:noStatus comment above the type to avoid generating ApplyStatus().
+	ApplyStatus(ctx context.Context, template *applyconfigurationtinkerbellv1alpha1.TemplateApplyConfiguration, opts v1.ApplyOptions) (result *tinkerbellv1alpha1.Template, err error)
 	TemplateExpansion
 }
 
 // templates implements TemplateInterface
 type templates struct {
-	*gentype.ClientWithList[*tinkerbellv1alpha1.Template, *tinkerbellv1alpha1.TemplateList]
+	*gentype.ClientWithListAndApply[*tinkerbellv1alpha1.Template, *tinkerbellv1alpha1.TemplateList, *applyconfigurationtinkerbellv1alpha1.TemplateApplyConfiguration]
 }
 
 // newTemplates returns a Templates
 func newTemplates(c *TinkerbellV1alpha1Client, namespace string) *templates {
 	return &templates{
-		gentype.NewClientWithList[*tinkerbellv1alpha1.Template, *tinkerbellv1alpha1.TemplateList](
+		gentype.NewClientWithListAndApply[*tinkerbellv1alpha1.Template, *tinkerbellv1alpha1.TemplateList, *applyconfigurationtinkerbellv1alpha1.TemplateApplyConfiguration](
 			"templates",
 			c.RESTClient(),
 			scheme.ParameterCodec,

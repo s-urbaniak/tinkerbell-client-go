@@ -6,20 +6,21 @@
 package fake
 
 import (
-	tinkerbellv1alpha1 "github.com/s-urbaniak/tinkerbell-client-go/generated/clientset/versioned/typed/tinkerbell/v1alpha1"
+	tinkerbellv1alpha1 "github.com/s-urbaniak/tinkerbell-client-go/generated/applyconfiguration/tinkerbell/v1alpha1"
+	typedtinkerbellv1alpha1 "github.com/s-urbaniak/tinkerbell-client-go/generated/clientset/versioned/typed/tinkerbell/v1alpha1"
 	v1alpha1 "github.com/tinkerbell/tinkerbell/api/v1alpha1/tinkerbell"
 	gentype "k8s.io/client-go/gentype"
 )
 
 // fakeWorkflowRuleSets implements WorkflowRuleSetInterface
 type fakeWorkflowRuleSets struct {
-	*gentype.FakeClientWithList[*v1alpha1.WorkflowRuleSet, *v1alpha1.WorkflowRuleSetList]
+	*gentype.FakeClientWithListAndApply[*v1alpha1.WorkflowRuleSet, *v1alpha1.WorkflowRuleSetList, *tinkerbellv1alpha1.WorkflowRuleSetApplyConfiguration]
 	Fake *FakeTinkerbellV1alpha1
 }
 
-func newFakeWorkflowRuleSets(fake *FakeTinkerbellV1alpha1, namespace string) tinkerbellv1alpha1.WorkflowRuleSetInterface {
+func newFakeWorkflowRuleSets(fake *FakeTinkerbellV1alpha1, namespace string) typedtinkerbellv1alpha1.WorkflowRuleSetInterface {
 	return &fakeWorkflowRuleSets{
-		gentype.NewFakeClientWithList[*v1alpha1.WorkflowRuleSet, *v1alpha1.WorkflowRuleSetList](
+		gentype.NewFakeClientWithListAndApply[*v1alpha1.WorkflowRuleSet, *v1alpha1.WorkflowRuleSetList, *tinkerbellv1alpha1.WorkflowRuleSetApplyConfiguration](
 			fake.Fake,
 			namespace,
 			v1alpha1.GroupVersion.WithResource("workflowrulesets"),

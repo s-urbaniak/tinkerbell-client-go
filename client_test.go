@@ -2,12 +2,17 @@ package clientgo_test
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
+	applyconfig "github.com/s-urbaniak/tinkerbell-client-go/generated/applyconfiguration"
+	applybmc "github.com/s-urbaniak/tinkerbell-client-go/generated/applyconfiguration/bmc/v1alpha1"
+	applytink "github.com/s-urbaniak/tinkerbell-client-go/generated/applyconfiguration/tinkerbell/v1alpha1"
 	clientset "github.com/s-urbaniak/tinkerbell-client-go/generated/clientset/versioned"
 	fakeclient "github.com/s-urbaniak/tinkerbell-client-go/generated/clientset/versioned/fake"
 	clientscheme "github.com/s-urbaniak/tinkerbell-client-go/generated/clientset/versioned/scheme"
@@ -103,6 +108,69 @@ func TestFakeAndInformerForHardware(t *testing.T) {
 	}
 	if informer.Informer() != factory.Tinkerbell().V1alpha1().Hardware().Informer() {
 		t.Fatal("ForResource did not share the typed informer")
+	}
+}
+
+func TestServerSideApply(t *testing.T) {
+	var requests []string
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests = append(requests, r.Method+" "+r.URL.Path)
+		if got := r.Header.Get("Content-Type"); !strings.HasPrefix(got, "application/apply-patch+yaml") {
+			t.Errorf("Content-Type = %q", got)
+		}
+		if got := r.URL.Query().Get("fieldManager"); got != "client-go-test" {
+			t.Errorf("fieldManager = %q", got)
+		}
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var object map[string]any
+		if err := json.Unmarshal(body, &object); err != nil {
+			t.Fatal(err)
+		}
+		if object["apiVersion"] != "tinkerbell.org/v1alpha1" || object["kind"] != "Hardware" {
+			t.Errorf("apply TypeMeta = %v", object)
+		}
+		if r.URL.Path == "/apis/tinkerbell.org/v1alpha1/namespaces/demo/hardware/node" {
+			spec, ok := object["spec"].(map[string]any)
+			if !ok || spec["agentID"] != "aa:bb:cc:dd:ee:ff" {
+				t.Errorf("apply spec = %v", object["spec"])
+			}
+		}
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprint(w, `{"apiVersion":"tinkerbell.org/v1alpha1","kind":"Hardware","metadata":{"name":"node","namespace":"demo"}}`)
+	})
+	httpClient := &http.Client{Transport: roundTripFunc(func(r *http.Request) (*http.Response, error) {
+		recorder := httptest.NewRecorder()
+		handler.ServeHTTP(recorder, r)
+		return recorder.Result(), nil
+	})}
+	client, err := clientset.NewForConfigAndClient(&rest.Config{Host: "https://example.invalid"}, httpClient)
+	if err != nil {
+		t.Fatal(err)
+	}
+	hardware := applytink.Hardware("node", "demo").WithSpec(applytink.HardwareSpec().WithAgentID("aa:bb:cc:dd:ee:ff"))
+	opts := metav1.ApplyOptions{FieldManager: "client-go-test"}
+	if _, err := client.TinkerbellV1alpha1().Hardware("demo").Apply(context.Background(), hardware, opts); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := client.TinkerbellV1alpha1().Hardware("demo").ApplyStatus(context.Background(), applytink.Hardware("node", "demo").WithStatus(applytink.HardwareStatus()), opts); err != nil {
+		t.Fatal(err)
+	}
+	want := []string{
+		"PATCH /apis/tinkerbell.org/v1alpha1/namespaces/demo/hardware/node",
+		"PATCH /apis/tinkerbell.org/v1alpha1/namespaces/demo/hardware/node/status",
+	}
+	if fmt.Sprint(requests) != fmt.Sprint(want) {
+		t.Fatalf("requests = %v, want %v", requests, want)
+	}
+	if _, ok := applyconfig.ForKind(bmc.GroupVersion.WithKind("Job")).(*applybmc.JobApplyConfiguration); !ok {
+		t.Fatal("ForKind did not resolve BMC Job")
+	}
+	job := applybmc.Job("reboot", "demo")
+	if job.Kind == nil || *job.Kind != "Job" || job.APIVersion == nil || *job.APIVersion != "bmc.tinkerbell.org/v1alpha1" {
+		t.Fatalf("BMC Job TypeMeta = %#v", job.TypeMetaApplyConfiguration)
 	}
 }
 

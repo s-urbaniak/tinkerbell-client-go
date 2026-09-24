@@ -6,20 +6,21 @@
 package fake
 
 import (
-	tinkerbellv1alpha1 "github.com/s-urbaniak/tinkerbell-client-go/generated/clientset/versioned/typed/tinkerbell/v1alpha1"
+	tinkerbellv1alpha1 "github.com/s-urbaniak/tinkerbell-client-go/generated/applyconfiguration/tinkerbell/v1alpha1"
+	typedtinkerbellv1alpha1 "github.com/s-urbaniak/tinkerbell-client-go/generated/clientset/versioned/typed/tinkerbell/v1alpha1"
 	v1alpha1 "github.com/tinkerbell/tinkerbell/api/v1alpha1/tinkerbell"
 	gentype "k8s.io/client-go/gentype"
 )
 
 // fakeHardware implements HardwareInterface
 type fakeHardware struct {
-	*gentype.FakeClientWithList[*v1alpha1.Hardware, *v1alpha1.HardwareList]
+	*gentype.FakeClientWithListAndApply[*v1alpha1.Hardware, *v1alpha1.HardwareList, *tinkerbellv1alpha1.HardwareApplyConfiguration]
 	Fake *FakeTinkerbellV1alpha1
 }
 
-func newFakeHardware(fake *FakeTinkerbellV1alpha1, namespace string) tinkerbellv1alpha1.HardwareInterface {
+func newFakeHardware(fake *FakeTinkerbellV1alpha1, namespace string) typedtinkerbellv1alpha1.HardwareInterface {
 	return &fakeHardware{
-		gentype.NewFakeClientWithList[*v1alpha1.Hardware, *v1alpha1.HardwareList](
+		gentype.NewFakeClientWithListAndApply[*v1alpha1.Hardware, *v1alpha1.HardwareList, *tinkerbellv1alpha1.HardwareApplyConfiguration](
 			fake.Fake,
 			namespace,
 			v1alpha1.GroupVersion.WithResource("hardware"),

@@ -6,20 +6,21 @@
 package fake
 
 import (
-	tinkerbellv1alpha1 "github.com/s-urbaniak/tinkerbell-client-go/generated/clientset/versioned/typed/tinkerbell/v1alpha1"
+	tinkerbellv1alpha1 "github.com/s-urbaniak/tinkerbell-client-go/generated/applyconfiguration/tinkerbell/v1alpha1"
+	typedtinkerbellv1alpha1 "github.com/s-urbaniak/tinkerbell-client-go/generated/clientset/versioned/typed/tinkerbell/v1alpha1"
 	v1alpha1 "github.com/tinkerbell/tinkerbell/api/v1alpha1/tinkerbell"
 	gentype "k8s.io/client-go/gentype"
 )
 
 // fakeTemplates implements TemplateInterface
 type fakeTemplates struct {
-	*gentype.FakeClientWithList[*v1alpha1.Template, *v1alpha1.TemplateList]
+	*gentype.FakeClientWithListAndApply[*v1alpha1.Template, *v1alpha1.TemplateList, *tinkerbellv1alpha1.TemplateApplyConfiguration]
 	Fake *FakeTinkerbellV1alpha1
 }
 
-func newFakeTemplates(fake *FakeTinkerbellV1alpha1, namespace string) tinkerbellv1alpha1.TemplateInterface {
+func newFakeTemplates(fake *FakeTinkerbellV1alpha1, namespace string) typedtinkerbellv1alpha1.TemplateInterface {
 	return &fakeTemplates{
-		gentype.NewFakeClientWithList[*v1alpha1.Template, *v1alpha1.TemplateList](
+		gentype.NewFakeClientWithListAndApply[*v1alpha1.Template, *v1alpha1.TemplateList, *tinkerbellv1alpha1.TemplateApplyConfiguration](
 			fake.Fake,
 			namespace,
 			v1alpha1.GroupVersion.WithResource("templates"),

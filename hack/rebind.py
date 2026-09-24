@@ -10,6 +10,10 @@ replacements = {
         "github.com/tinkerbell/tinkerbell/api/v1alpha1/bmc",
     f"{module}/internal/codegen/apis/tinkerbell/v1alpha1":
         "github.com/tinkerbell/tinkerbell/api/v1alpha1/tinkerbell",
+    f"{module}/internal/codegen/applyinput/bmc/v1alpha1":
+        "github.com/tinkerbell/tinkerbell/api/v1alpha1/bmc",
+    f"{module}/internal/codegen/applyinput/tinkerbell/v1alpha1":
+        "github.com/tinkerbell/tinkerbell/api/v1alpha1/tinkerbell",
     "SchemeGroupVersion": "GroupVersion",
     'Resource: "hardwares"': 'Resource: "hardware"',
 }
