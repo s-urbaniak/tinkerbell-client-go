@@ -12,7 +12,7 @@ import (
 	versioned "github.com/s-urbaniak/tinkerbell-client-go/generated/clientset/versioned"
 	internalinterfaces "github.com/s-urbaniak/tinkerbell-client-go/generated/informers/externalversions/internalinterfaces"
 	tinkerbellv1alpha1 "github.com/s-urbaniak/tinkerbell-client-go/generated/listers/tinkerbell/v1alpha1"
-	apistinkerbellv1alpha1 "github.com/tinkerbell/tinkerbell/api/v1alpha1/tinkerbell"
+	inputtinkerbellv1alpha1 "github.com/tinkerbell/tinkerbell/api/v1alpha1/tinkerbell"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
@@ -81,7 +81,7 @@ func NewWorkflowRuleSetInformerWithOptions(client versioned.Interface, namespace
 				return client.TinkerbellV1alpha1().WorkflowRuleSets(namespace).Watch(ctx, opts)
 			},
 		}, client),
-		&apistinkerbellv1alpha1.WorkflowRuleSet{},
+		&inputtinkerbellv1alpha1.WorkflowRuleSet{},
 		cache.SharedIndexInformerOptions{
 			ResyncPeriod: options.ResyncPeriod,
 			Indexers:     options.Indexers,
@@ -95,7 +95,7 @@ func (f *workflowRuleSetInformer) defaultInformer(client versioned.Interface, re
 }
 
 func (f *workflowRuleSetInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&apistinkerbellv1alpha1.WorkflowRuleSet{}, f.defaultInformer)
+	return f.factory.InformerFor(&inputtinkerbellv1alpha1.WorkflowRuleSet{}, f.defaultInformer)
 }
 
 func (f *workflowRuleSetInformer) Lister() tinkerbellv1alpha1.WorkflowRuleSetLister {

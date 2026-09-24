@@ -55,32 +55,41 @@ _, err = clients.TinkerbellV1alpha1().Hardware("default").Apply(
 
 ## Regenerate
 
-Requirements: Go 1.26 and Python 3. Run:
+Requirement: Go 1.26. Run:
 
 ```sh
-./hack/generate.sh
+./hack/update-codegen.sh
 go test ./...
+./hack/verify-codegen.sh
 ```
 
-`hack/generate.sh` installs Kubernetes `applyconfiguration-gen`, `client-gen`,
-`lister-gen`, and `informer-gen` v0.36.3 into `.bin/`, then runs them entirely in
-this repository. For apply builders, it temporarily copies the full API source
-from the pinned published module into a `group/version` layout, generates the
-builders, and removes that temporary input. Client generation uses the minimal
-concrete stubs under `internal/codegen/apis`. Those stubs exist because the
-Kubernetes generators do not discover aliases to Tinkerbell's public
-`version/group` API types. The post-generation step binds all output to the
-published API module, changes the scheme symbol to Tinkerbell's `GroupVersion`,
-and uses the CRD's singular `hardware` resource path. No generated package
-imports the temporary copy or the stubs.
+`hack/update-codegen.sh` sources the pinned Kubernetes `kube_codegen.sh` and
+calls `kube::codegen::gen_client --with-applyconfig --with-watch`. It generates
+the clientset, fake clients, listers, informers, and apply builders together.
+This is the same script entry point used by Kubernetes projects such as Agones
+and KCP. Generator tools are installed in `.bin/` at v0.36.3, matching
+`client-go`.
+
+The pattern follows [Kubernetes code-generator's documented entry point](https://github.com/kubernetes/code-generator/blob/master/kube_codegen.sh),
+the [Agones generation script](https://github.com/Agones-dev/agones/blob/main/build/build-image/gen-crd-code.sh),
+and the [KCP code-generator guidance](https://github.com/kcp-dev/code-generator).
+
+The published Tinkerbell API uses `version/group` package paths, while
+`kube_codegen.sh` requires `group/version` input packages with `+genclient`
+markers. `hack/prepare-codegen.sh` temporarily copies the full pinned API
+sources into that layout and adds the markers. `hack/rebind-generated.sh` then
+points generated imports to the published API module, uses its `GroupVersion`
+symbol, and preserves the CRD's singular `hardware` resource path. The
+temporary input is deleted after generation. No generated code enters the
+Tinkerbell repository or imports the temporary packages.
 
 This proof of concept does not supply an OpenAPI v2 schema to the apply
 generator, so it does not emit `Extract*` helpers for reconstructing
 field ownership from live objects. `Apply` and `ApplyStatus` use Kubernetes'
 server-side apply patch protocol.
 
-To check reproducibility, run generation and confirm `git diff --exit-code --
-generated` succeeds.
+`hack/verify-codegen.sh` checks that regeneration leaves no diff in
+`generated/`; CI runs it on every push and pull request.
 
 ## Scope and next step
 

@@ -12,7 +12,7 @@ import (
 	versioned "github.com/s-urbaniak/tinkerbell-client-go/generated/clientset/versioned"
 	internalinterfaces "github.com/s-urbaniak/tinkerbell-client-go/generated/informers/externalversions/internalinterfaces"
 	bmcv1alpha1 "github.com/s-urbaniak/tinkerbell-client-go/generated/listers/bmc/v1alpha1"
-	apisbmcv1alpha1 "github.com/tinkerbell/tinkerbell/api/v1alpha1/bmc"
+	inputbmcv1alpha1 "github.com/tinkerbell/tinkerbell/api/v1alpha1/bmc"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
@@ -81,7 +81,7 @@ func NewJobInformerWithOptions(client versioned.Interface, namespace string, opt
 				return client.BmcV1alpha1().Jobs(namespace).Watch(ctx, opts)
 			},
 		}, client),
-		&apisbmcv1alpha1.Job{},
+		&inputbmcv1alpha1.Job{},
 		cache.SharedIndexInformerOptions{
 			ResyncPeriod: options.ResyncPeriod,
 			Indexers:     options.Indexers,
@@ -95,7 +95,7 @@ func (f *jobInformer) defaultInformer(client versioned.Interface, resyncPeriod t
 }
 
 func (f *jobInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&apisbmcv1alpha1.Job{}, f.defaultInformer)
+	return f.factory.InformerFor(&inputbmcv1alpha1.Job{}, f.defaultInformer)
 }
 
 func (f *jobInformer) Lister() bmcv1alpha1.JobLister {

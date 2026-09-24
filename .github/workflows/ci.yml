@@ -12,5 +12,4 @@ jobs:
           go-version-file: go.mod
           cache: true
       - run: go test ./...
-      - run: ./hack/generate.sh
-      - run: git diff --exit-code -- generated
+      - run: ./hack/verify-codegen.sh

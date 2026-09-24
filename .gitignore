@@ -1,4 +1,4 @@
 .bin/
 .DS_Store
 .cache/
-internal/codegen/applyinput/
+internal/codegen/input/
