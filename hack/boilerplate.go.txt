@@ -1,0 +1,2 @@
+// Copyright 2026 The Tinkerbell client-go contributors.
+// SPDX-License-Identifier: Apache-2.0
