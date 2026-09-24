@@ -4,6 +4,7 @@ set -euo pipefail
 input_dir="$1"
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "${repo_root}"
+go mod download github.com/tinkerbell/tinkerbell/api
 api_dir="$(go list -m -f '{{.Dir}}' github.com/tinkerbell/tinkerbell/api)"
 module=github.com/s-urbaniak/tinkerbell-client-go
 rm -rf "${input_dir}"

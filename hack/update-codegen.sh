@@ -11,6 +11,8 @@ export GOBIN="${repo_root}/.bin"
 export GOCACHE="${GOCACHE:-${repo_root}/.cache}"
 mkdir -p "${GOBIN}"
 
+# A fresh checkout can have module metadata without the generator source.
+go mod download k8s.io/code-generator
 codegen_dir="$(go list -m -f '{{.Dir}}' k8s.io/code-generator)"
 # shellcheck source=/dev/null
 source "${codegen_dir}/kube_codegen.sh"
